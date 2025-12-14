@@ -21,7 +21,7 @@
 			}
 		]
 	},
-	"r2_buckets": [{ "binding": "MAIL_BUCKET", "bucket_name": "mox_mail_bucket" }],
+	"r2_buckets": [{ "binding": "MAIL_BUCKET", "bucket_name": "mox-mail-bucket" }],
 	"observability": {
 		"enabled": true
 	}
