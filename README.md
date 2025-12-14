@@ -1,3 +1,5 @@
+[日本語](./README.ja.md)
+
 # mox (MailbOX)
 
 A blazingly fast and easy way to ~~abuse~~ use Cloudflare Email Workers
@@ -5,7 +7,7 @@ A blazingly fast and easy way to ~~abuse~~ use Cloudflare Email Workers
 ## Setup
 
 - Deploy with the Cloudflare quick deploy button:  
-  [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/your-org/mox)
+  [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yuimarudev/mox)
 - During deployment, set environment variables: `API_TOKEN` (required), `MAILBOX_MAX_MESSAGES`, `MAX_PARSE_BYTES`.
 - For local dev, copy `.env.example` to `.env`, run `pnpm install`, then `wrangler dev`.
 - `API_TOKEN` is mandatory; every request must include `Authorization: Bearer <API_TOKEN>`.
