@@ -18,29 +18,29 @@ A blazingly fast and easy way to ~~abuse~~ use Cloudflare Email Workers
 ```bash
 # List the latest 5 messages (with Bearer auth)
 curl -H "Authorization: Bearer $API_TOKEN" \
-  "http://localhost:8787/mailbox/alice?limit=5"
+  "http://localhost:8787/mailbox/alice@example.com?limit=5"
 
 # Fetch a single message (metadata + parsed body)
 curl -H "Authorization: Bearer $API_TOKEN" \
-  "http://localhost:8787/mailbox/alice/<message-id>"
+  "http://localhost:8787/mailbox/alice@example.com/<message-id>"
 
 # Download the original EML
 curl -H "Authorization: Bearer $API_TOKEN" \
   -o message.eml \
-  "http://localhost:8787/mailbox/alice/<message-id>/raw"
+  "http://localhost:8787/mailbox/alice@example.com/<message-id>/raw"
 
 # List attachments
 curl -H "Authorization: Bearer $API_TOKEN" \
-  "http://localhost:8787/mailbox/alice/<message-id>/attachments"
+  "http://localhost:8787/mailbox/alice@example.com/<message-id>/attachments"
 
 # Download a specific attachment
 curl -H "Authorization: Bearer $API_TOKEN" \
   -o attachment.bin \
-  "http://localhost:8787/mailbox/alice/<message-id>/attachments/<attachment-id>"
+  "http://localhost:8787/mailbox/alice@example.com/<message-id>/attachments/<attachment-id>"
 
 # Delete all messages in the mailbox
 curl -X DELETE -H "Authorization: Bearer $API_TOKEN" \
-  "http://localhost:8787/mailbox/alice"
+  "http://localhost:8787/mailbox/alice@example.com"
 ```
 
 ## API Reference
@@ -57,12 +57,12 @@ curl -X DELETE -H "Authorization: Bearer $API_TOKEN" \
   "message": {
     "id": "uuid",
     "receivedAt": "2024-01-01T00:00:00.000Z",
-    "username": "alice",
+    "username": "alice@example.com",
     "to": "alice@example.com",
     "from": "bob@example.com",
     "subject": "Hello",
     "headers": { "subject": "Hello", "from": "bob@example.com" },
-    "raw": { "r2Key": "raw/alice/2024-01-01/<id>.eml" },
+    "raw": { "r2Key": "raw/alice%40example.com/2024-01-01/<id>.eml" },
     "parse": { "truncated": false, "maxBytes": 1000000 },
     "body": { "text": "hello", "html": "<p>hello</p>" },
     "attachments": [
@@ -71,7 +71,7 @@ curl -X DELETE -H "Authorization: Bearer $API_TOKEN" \
         "filename": "file.txt",
         "contentType": "text/plain",
         "size": 123,
-        "r2Key": "att/alice/2024-01-01/<id>/…/file.txt",
+        "r2Key": "att/alice%40example.com/2024-01-01/<id>/…/file.txt",
         "inline": false,
         "contentId": null
       }
@@ -82,25 +82,27 @@ curl -X DELETE -H "Authorization: Bearer $API_TOKEN" \
 
 ### Endpoints
 
-- `GET /mailbox/:username?limit=50&cursor=<ts-key>`  
+- `GET /mailbox/:address?limit=50&cursor=<ts-key>`  
   Returns the newest messages. `limit` up to 200. Use `nextCursor` for pagination.
 
-- `GET /mailbox/:username/:id`  
+- `GET /mailbox/:address/:id`  
   Returns one message (metadata + parsed text/html summaries).
 
-- `GET /mailbox/:username/:id/raw`  
+- `GET /mailbox/:address/:id/raw`  
   Returns the original RFC822 (EML).
 
-- `GET /mailbox/:username/:id/attachments`  
+- `GET /mailbox/:address/:id/attachments`  
   Returns attachment metadata.
 
-- `GET /mailbox/:username/:id/attachments/:attachmentId`  
+- `GET /mailbox/:address/:id/attachments/:attachmentId`  
   Downloads an attachment. `Content-Disposition` is `attachment`.
 
-- `DELETE /mailbox/:username`  
+- `DELETE /mailbox/:address`  
   Deletes all messages for the mailbox.
 
 ### Notes
 
+- Mailboxes are keyed by the full recipient address (e.g. `alice@example.com`).
+  Local-part-only access like `/mailbox/alice` is intentionally not supported.
 - `MAILBOX_MAX_MESSAGES` trims the oldest messages when the limit is exceeded.
 - If a message exceeds `MAX_PARSE_BYTES`, parsing is skipped and `parse.truncated: true` is returned.
