@@ -1,6 +1,6 @@
 # mox (MailbOX)
 
-Cloudflare Email Worker と Durable Object でメールを受信・保存し、REST API から閲覧できる簡易メールボックスです。
+【令和最新版】Cloudflare Email Workers を使用して神になる方法【バカでもできる】
 
 ## セットアップ
 
