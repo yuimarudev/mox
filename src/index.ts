@@ -157,11 +157,17 @@ export class MailboxDO extends DurableObject<Env> {
 
 export default {
   async email(message, env, ctx) {
-    const username = localPart(message.to);
+    const username = mailboxKey(message.to);
+
+    if (!isMailboxKey(username)) {
+      return;
+    }
+
     const id = crypto.randomUUID();
     const receivedAt = new Date().toISOString();
     const ymd = receivedAt.slice(0, 10);
-    const rawKey = `raw/${username}/${ymd}/${id}.eml`;
+    const mailboxPath = encodeURIComponent(username);
+    const rawKey = `raw/${mailboxPath}/${ymd}/${id}.eml`;
     const [saveStream, parseStream] = message.raw.tee();
     const putRaw = env.MAIL_BUCKET.put(rawKey, saveStream, {
       httpMetadata: { contentType: "message/rfc822" },
@@ -187,7 +193,7 @@ export default {
         const attPuts: Array<Promise<StoredAttachment>> = parsedAtts.map(async (att, idx) => {
           const attachmentId = crypto.randomUUID();
           const safeName = (att.filename || `attachment-${idx}`).replace(/[\/\\]/g, "_");
-          const attKey = `att/${username}/${ymd}/${id}/${attachmentId}/${safeName}`;
+          const attKey = `att/${mailboxPath}/${ymd}/${id}/${attachmentId}/${safeName}`;
           const contentType = att.mimeType || "application/octet-stream";
           const content = att.content;
           const size = getByteLength(content);
@@ -275,7 +281,8 @@ export default {
     const rawId = m[2];
     const rawSub = m[3];
     const rawSubId = m[4];
-    const username = decodeURIComponent(rawUsername).toLowerCase();
+    const username = decodeURIComponent(rawUsername).trim().toLowerCase();
+    if (!isMailboxKey(username)) return new Response("Not Found", { status: 404 });
     const id = rawId ? decodeURIComponent(rawId) : null;
     const sub = rawSub || null;
     const subId = rawSubId ? decodeURIComponent(rawSubId) : null;
@@ -360,9 +367,20 @@ export default {
   },
 } satisfies ExportedHandler<Env>;
 
-function localPart(addr: string) {
-  const at = addr.indexOf("@");
-  return (at >= 0 ? addr.slice(0, at) : addr).trim().toLowerCase();
+function mailboxKey(addr: string) {
+  const trimmed = (addr || "").trim();
+  const lt = trimmed.lastIndexOf("<");
+  const gt = trimmed.lastIndexOf(">");
+  const extracted = lt >= 0 && gt > lt ? trimmed.slice(lt + 1, gt).trim() : trimmed;
+
+  return extracted.toLowerCase();
+}
+
+function isMailboxKey(key: string) {
+  const s = (key || "").trim();
+  const at = s.indexOf("@");
+
+  return at > 0 && at === s.lastIndexOf("@") && at < s.length - 1;
 }
 
 function json(data: Object, status = 200, extraHeaders: Record<string, string> = {}) {
