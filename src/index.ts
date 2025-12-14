@@ -169,10 +169,14 @@ export default {
     const mailboxPath = encodeURIComponent(username);
     const rawKey = `raw/${mailboxPath}/${ymd}/${id}.eml`;
     const [saveStream, parseStream] = message.raw.tee();
-    const putRaw = env.MAIL_BUCKET.put(rawKey, saveStream, {
+    const { readable, writable } = new FixedLengthStream(message.rawSize);
+    const putRaw = env.MAIL_BUCKET.put(rawKey, readable, {
       httpMetadata: { contentType: "message/rfc822" },
       customMetadata: { to: message.to, from: message.from, receivedAt },
     });
+
+    ctx.waitUntil(saveStream.pipeTo(writable));
+
     const maxParseBytes = Number(env.MAX_PARSE_BYTES || 1_000_000);
 
     let textBody: string | null = null;
