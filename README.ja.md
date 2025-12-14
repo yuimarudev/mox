@@ -5,7 +5,7 @@
 ## セットアップ
 
 - Cloudflare のクイックデプロイボタンからデプロイできます
-  [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/your-org/mox)  
+  [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yuimarudev/mox)  
 - デプロイ時に環境変数を設定してください：`API_TOKEN`（必須）、`MAILBOX_MAX_MESSAGES`、`MAX_PARSE_BYTES`
 - ローカル開発する場合は `.env.example` を `.env` にコピーし、`pnpm install` の後 `wrangler dev` を実行します。
 - `API_TOKEN` は必須で、すべてのリクエストに `Authorization: Bearer <API_TOKEN>` を付けてください。
